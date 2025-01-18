@@ -103,8 +103,25 @@ app.get("/terms", (req, res) => {
   res.render("includes/terms.ejs", { siteName });
 });
 
-app.all("*", (req, res, next) => {
-  next(new Expresserror(404, "Page not found"));
+app.get("/refund", (req, res) => {
+  //refund route
+  let siteName = "tranquiltrips.com";
+  res.render("includes/refund.ejs", { siteName });
+});
+
+app.get("/disclaimer", (req, res) => {
+  //privacy route
+  let siteName = "tranquiltrips.com";
+  res.render("includes/disclaimer.ejs", { siteName });
+});
+
+// app.all("*", (req, res, next) => {
+//   let siteName = "tranquiltrips.com";
+//   res.render("includes/disclaimer.ejs", { siteName });
+// });
+
+app.all("*", (req, res) => {
+  res.redirect("/");
 });
 
 app.use((err, req, res, next) => {
