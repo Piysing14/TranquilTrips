@@ -121,7 +121,7 @@ app.get("/disclaimer", (req, res) => {
 // });
 
 app.all("*", (req, res) => {
-  res.redirect("/");
+  res.redirect("/listings");
 });
 
 app.use((err, req, res, next) => {
