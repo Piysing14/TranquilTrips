@@ -114,11 +114,12 @@ app.get("/disclaimer", (req, res) => {
   let siteName = "tranquiltrips.com";
   res.render("includes/disclaimer.ejs", { siteName });
 });
+app.get("/contact", (req, res) => {
+  //privacy route
+  let siteName = "tranquiltrips.com";
+  res.render("includes/contact.ejs", { siteName });
+});
 
-// app.all("*", (req, res, next) => {
-//   let siteName = "tranquiltrips.com";
-//   res.render("includes/disclaimer.ejs", { siteName });
-// });
 
 app.all("*", (req, res) => {
   res.redirect("/listings");
