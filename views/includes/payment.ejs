@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page - TranquilTrips</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f3f3f3;
+            text-align: center;
+            padding: 50px;
+        }
+        .payment-container {
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 400px;
+            margin: 0 auto;
+        }
+        .payment-container h1 {
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        .payment-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .payment-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="payment-container">
+        <h1>Make a Payment</h1>
+        <p>Enter the amount you want to pay:</p>
+        <input type="number" id="amount" placeholder="Enter amount in ₹" required>
+        <br><br>
+        <button class="payment-btn" onclick="payNow()">Pay Now</button>
+    </div>
+
+    <script>
+        async function payNow() {
+            var amount = document.getElementById("amount").value;
+            
+            if (!amount || amount <= 0) {
+                alert("Please enter a valid amount.");
+                return;
+            }
+
+            // Create an order on the server
+            const orderResponse = await fetch('/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: amount })
+            });
+
+            const orderData = await orderResponse.json();
+
+            if (!orderData.id) {
+                alert("Error creating order. Please try again.");
+                return;
+            }
+
+            var options = {
+                "key": "rzp_test_pGFGkakwqefZhM", // Replace with your Razorpay Key
+                "amount": amount * 100, // Convert amount to paisa
+                "currency": "INR",
+                "order_id": orderData.id, // Order ID returned from server
+                "name": "TranquilTrips",
+                "description": "Payment for booking",
+                "image": "https://your-site-logo.com/logo.png", // Your logo URL
+                "handler": function (response) {
+                    verifyPayment(response);
+                },
+                "prefill": {
+                    "name": "Customer Name",
+                    "email": "customer@example.com",
+                    "contact": "9999999999"
+                },
+                "theme": {
+                    "color": "#4CAF50"
+                }
+            };
+
+            var rzp1 = new Razorpay(options);
+            rzp1.open();
+        }
+
+        async function verifyPayment(response) {
+            const verificationResponse = await fetch('/verify-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    payment_id: response.razorpay_payment_id,
+                    order_id: response.razorpay_order_id,
+                    signature: response.razorpay_signature
+                })
+            });
+
+            const verificationData = await verificationResponse.json();
+
+            if (verificationData.status === 'success') {
+                alert('Payment successful!');
+            } else {
+                alert('Payment verification failed!');
+            }
+        }
+    </script>
+
+</body>
+</html>
