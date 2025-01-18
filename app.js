@@ -15,20 +15,7 @@ const flash = require("connect-flash");
 const passport=require("passport");
 const LocalStrategy=require("passport-local");
 const User=require("./models/user.js"); // requires the model with Passport-Local Mongoose plugged in
-const Razorpay = require('razorpay');
-const bodyParser = require('body-parser');
-const crypto = require('crypto');
 const dbUrl=process.env.ATLASDB_URL;
-
-// Initialize Razorpay instance with your keys
-const razorpay = new Razorpay({
-  key_id: 'rzp_test_pGFGkakwqefZhM', // Replace with your Razorpay Key
-  key_secret: 'r5gcqQarCuHHts2FOh6CcqWI' // Replace with your Razorpay Secret
-});
-
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
 
 
 const listingRouter = require("./routes/listing.js");
@@ -139,12 +126,6 @@ app.get("/shipping", (req, res) => {
   res.render("includes/shipping.ejs", { siteName });
 });
 
-app.get("/pay", (req, res) => {
-  //shipping route
-  let siteName = "tranquiltrips.com";
-  res.render("includes/payment.ejs", { siteName });
-});
-
 
 app.all("*", (req, res) => {
   res.redirect("/listings");
@@ -155,52 +136,6 @@ app.use((err, req, res, next) => {
   // res.status(status).send(message);
   res.status(status).render("error.ejs", { err });
 });
-
-// Route to create an order
-app.post('/create-order', async (req, res) => {
-  const { amount } = req.body; // Get the amount from the request
-
-  if (!amount || amount <= 0) {
-    return res.status(400).send('Amount must be greater than zero.');
-  }
-
-  const options = {
-    amount: amount * 100, // Amount is in paisa (1 INR = 100 paisa)
-    currency: "INR",
-    receipt: "receipt#" + new Date().getTime(),
-    payment_capture: 1
-  };
-
-  try {
-    const order = await razorpay.orders.create(options); // Create the order
-    res.json({
-      id: order.id // Send the order ID to the client
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Failed to create order');
-  }
-});
-
-// Route to verify the payment signature
-app.post('/verify-payment', (req, res) => {
-  const { payment_id, order_id, signature } = req.body;
-
-  const shasum = crypto.createHmac('sha256', 'YOUR_RAZORPAY_SECRET'); // Use your Razorpay Secret
-  shasum.update(order_id + "|" + payment_id);
-  const generated_signature = shasum.digest('hex');
-
-  if (generated_signature === signature) {
-    // Payment is verified successfully
-    res.json({ status: 'success', payment_id });
-  } else {
-    // Payment verification failed
-    res.status(400).send('Payment verification failed');
-  }
-});
-
-
-
 
 app.listen(8080, () => {
   console.log("Sever is listening to port 8080");
