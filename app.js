@@ -120,6 +120,12 @@ app.get("/contact", (req, res) => {
   res.render("includes/contact.ejs", { siteName });
 });
 
+app.get("/shipping", (req, res) => {
+  //shipping route
+  let siteName = "tranquiltrips.com";
+  res.render("includes/shipping.ejs", { siteName });
+});
+
 
 app.all("*", (req, res) => {
   res.redirect("/listings");
